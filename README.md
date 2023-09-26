@@ -1,2 +1,2 @@
-# intern-map-backend
+# internmap-backend
 backend for the project "internmap"
