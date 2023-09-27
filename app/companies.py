@@ -87,12 +87,15 @@ def add_lat_lng(db, companies):
 		lat = data["results"][0]["geometry"]["location"]["lat"]
 		lng = data["results"][0]["geometry"]["location"]["lng"]
 
-		company[10] = lat
-		company[11] = lng
 
 		# On met à jour la table company
 		db.c.execute(f"UPDATE company SET latitude={lat}, longitude={lng} WHERE id={company[0]}")
 		db.mysql.commit()
+
+	# On récupère toutes les données de la table company
+	db.c.execute("SELECT * FROM company")
+	companies = db.c.fetchall()
+	
 
 	return companies
 		
