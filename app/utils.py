@@ -35,15 +35,15 @@ def get_db(): #TODO: variable d'environnement
 
 	load_dotenv()
 	if db_host is None:
+		print("DB_HOST is None")
 		db_host = getenv('DB_HOST')
+		print(db_host)
 	if db_user is None:
 		db_user = getenv('DB_USER')
 	if db_passwd is None:
 		db_passwd = getenv('DB_PASSWD')
 	if db_database is None:
 		db_database = getenv('DB_DATABASE')
-
-	db_host="localhost"
 
 
 	db = DB(db_host, db_user, db_passwd, db_database)
