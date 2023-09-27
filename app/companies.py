@@ -7,8 +7,10 @@ from dotenv import load_dotenv
 from utils import get_db
 
 # getting from .env file 'GEOCODING_API'
-load_dotenv()
-CLE_GEOCODING=getenv("GEOCODING_API")
+CLE_GEOCODING=getenv("GEOCODING_API_KEY")
+if CLE_GEOCODING is None:
+	load_dotenv()
+	CLE_GEOCODING=getenv("GEOCODING_API")
 
 def get_companies():
 	""" GET /companies
