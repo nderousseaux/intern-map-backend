@@ -18,6 +18,7 @@ steps:
       - '--build-arg'
       - >-
         DB_USER=$_DB_USER
+      - '--build-arg'
       - >-
         DB_PASSWD=$_DB_PASSWD
       - .
