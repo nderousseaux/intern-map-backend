@@ -43,6 +43,8 @@ def get_db(): #TODO: variable d'environnement
 	if db_database is None:
 		db_database = getenv('DB_DATABASE')
 
+	db_host="localhost"
+
 
 	db = DB(db_host, db_user, db_passwd, db_database)
 	db.connect()
