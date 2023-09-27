@@ -28,12 +28,23 @@ class DB:
 
 
 def get_db(): #TODO: variable d'environnement
+	db_host = getenv('DB_HOST')
+	db_user = getenv('DB_USER')
+	db_passwd = getenv('DB_PASSWD')
+	db_database = getenv('DB_DATABASE')
+
 	load_dotenv()
-	print(getenv('DB_HOST'))
-	print(getenv('DB_USER'))
-	print(getenv('DB_PASSWD'))
-	print(getenv('DB_DATABASE'))
-	db = DB(getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASSWD'), getenv('DB_DATABASE'))
+	if db_host is None:
+		db_host = getenv('DB_HOST')
+	if db_user is None:
+		db_user = getenv('DB_USER')
+	if db_passwd is None:
+		db_passwd = getenv('DB_PASSWD')
+	if db_database is None:
+		db_database = getenv('DB_DATABASE')
+
+
+	db = DB(db_host, db_user, db_passwd, db_database)
 	db.connect()
 	db.get_cursor()
 	return db

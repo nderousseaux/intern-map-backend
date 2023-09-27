@@ -11,7 +11,7 @@ steps:
         GEOCODING_API_KEY=$_GEOCODING_API_KEY
       - '--build-arg'
       - >-
-        DB_HOST=localhost
+        DB_HOST=$_DB_HOST
       - '--build-arg'
       - >-
         DB_DATABASE=$_DB_DATABASE
