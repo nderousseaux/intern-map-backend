@@ -1,5 +1,5 @@
 # Étape de construction de l'application
-FROM python:3.8-slim-buster as build-stage
+FROM python:3.6-slim
 ARG GEOCODING_API_KEY
 ARG DB_DATABASE
 ARG DB_USER
@@ -10,9 +10,7 @@ ENV GEOCODING_API_KEY=$GEOCODING_API_KEY
 ENV DB_DATABASE=$DB_DATABASE
 ENV DB_USER=$DB_USER
 ENV DB_PASSWD=$DB_PASSWD
-ENV DB_HOST=feur
-
-FROM python:3.6-slim
+ENV DB_HOST=$DB_HOST
 COPY . /srv/flask_app
 WORKDIR /srv/flask_app
 
