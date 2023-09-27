@@ -83,6 +83,8 @@ def add_lat_lng(db, companies):
 		response = requests.get(url)
 		data = response.json()
 
+		print(data)
+
 		# On récupère les coordonnées GPS
 		lat = data["results"][0]["geometry"]["location"]["lat"]
 		lng = data["results"][0]["geometry"]["location"]["lng"]
