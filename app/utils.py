@@ -34,7 +34,6 @@ def get_db(): #TODO: variable d'environnement
 	print(getenv('DB_PASSWD'))
 	print(getenv('DB_DATABASE'))
 	db = DB(getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASSWD'), getenv('DB_DATABASE'))
-	# db = DB("localhost", "user", "password", "db")
 	db.connect()
 	db.get_cursor()
 	return db

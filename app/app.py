@@ -2,7 +2,7 @@
 
 from companies import get_companies
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -21,7 +21,11 @@ def companies():
 		
 @app.route('/', methods=['GET'])
 def index():
-	return "Hello world"
+	return jsonify({'message': 'Hello World'})
 	
+def application(env, start_response):
+	start_response('200 OK', [('Content-Type', 'text/html')])
+	return [b"Hello World"]
+
 if __name__ == '__main__':
-	app.run(debug=True, port=5001)
+	app.run(debug=True, host=5001)
