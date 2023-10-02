@@ -25,6 +25,6 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --src /usr/local/src
 
 COPY build/nginx.conf /etc/nginx
-RUN chmod +x ./buidl/start.sh
+RUN chmod +x ./build/start.sh
 
 CMD ["./build/start.sh"]
