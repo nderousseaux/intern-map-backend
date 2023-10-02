@@ -10,7 +10,7 @@ from utils import get_db
 CLE_GEOCODING=getenv("GEOCODING_API_KEY")
 if CLE_GEOCODING is None:
 	load_dotenv()
-	CLE_GEOCODING=getenv("GEOCODING_API")
+	CLE_GEOCODING=getenv("GEOCODING_API_KEY")
 
 def get_companies():
 	""" GET /companies

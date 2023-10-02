@@ -16,27 +16,6 @@ services:
       - '3306'
     volumes:
       - ./db_data:/var/lib/mysql
-
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    environment:
-      DB_HOST: 'db'
-      DB_DATABASE: 'db'
-      DB_USER: 'user'
-      DB_PASSWD: 'password'
-    ports:
-      - '8000:80'
-    expose:
-      - '80'
-    links:
-      - db
-    depends_on:
-      - db
-    
-
-
+      
 volumes:
   db_data:
