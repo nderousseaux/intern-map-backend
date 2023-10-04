@@ -21,7 +21,7 @@ def get_companies():
 	companies, tags, companies_tags = get_data_from_db(db)
 
 	# Second step : correct possible problems in data
-	companies, companies_tag = clean_data(db, companies, companies_tags)
+	companies, companies_tags = clean_data(db, companies, companies_tags)
 
 	db.close()
 
@@ -130,7 +130,7 @@ def check_duplicate(db, companies, companies_tags):
 	
 	return companies, companies_tags
 
-def format_data(companies, tags, companies_tag):
+def format_data(companies, tags, companies_tags):
 	""" Format companies, tags and companies_tag to return a JSON.
 	Return 2 dict : companies and tags.
 	"""
@@ -163,7 +163,7 @@ def format_data(companies, tags, companies_tag):
 		}
 
 	# Add tags to companies
-	for company_tag in companies_tag:
+	for company_tag in companies_tags:
 		companies_return[company_tag[0]]["tags"].append(company_tag[1])
 
 	
