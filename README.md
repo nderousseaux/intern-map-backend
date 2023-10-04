@@ -1,6 +1,11 @@
 # internmap-backend
 backend for the project "internmap"
 
+The service propose an API to get the data from the database.
+There is 2 endpoints:
+- `/` to get the hello world message.
+- `/companies` to get the list of companies and the tags.
+
 ## Development
 
 Copy/paste the file `.env.example` to `.env` and fill the variables.
@@ -23,6 +28,8 @@ docker compose -f bdd/docker-compose.yml exec -T db mysql -u root -ppassword db 
 Launch the server with `python src/main.py`.
 
 If needed, you can install the dependencies with `pip install -r requirements.txt`.
+
+The server is available at `http://localhost:5001`.
 
 ## Deployment
 For the deployment, `Dockerfile` and `gcloud-build.yml` are used.

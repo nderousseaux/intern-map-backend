@@ -1,114 +1,144 @@
-from os import getenv
-
 from flask import jsonify
 import requests
-from dotenv import load_dotenv
 
-from utils import get_db
+from db import init_db
+from utils import get_env
 
-# getting from .env file 'GEOCODING_API'
-CLE_GEOCODING=getenv("GEOCODING_API_KEY")
-if CLE_GEOCODING is None:
-	load_dotenv()
-	CLE_GEOCODING=getenv("GEOCODING_API_KEY")
+CLE_GEOCODING = get_env("GEOCODING_API_KEY")
 
 def get_companies():
-	""" GET /companies
-	3 step.
-	First, get all companies from database.
-	Second, check if companies have lat/lng. If not, use geocode to get lat/lng and save to database.
-	Third, return all companies with this format :
-	{
-		"companies": {
-			"1502": {
-				"name": "NATTER  ELECTRICITE",
-				"address": "Rue de la Tuilerie ",
-				"city": " ASPACH LE BAS",
-				"zip": "68700",
-				"phone": "0607769021",
-				"mail": null,
-				"website": null,
-				"manager": "NATTER",
-				"tutor": "ZIEGLER MICHEL",
-				"gps": {
-					"lat": 47.767928,
-					"lng": 7.140398
-				},
-				"tags": [
-					20
-				]
-			},
-			...
-		},
-		"tags": {
-			"19": {
-				"name": "ASSP"
-			},
-			...
-		}
-  }
+	"""Return a list of companies and tags.
+	This will be in 3 steps :
+	1. Get all companies from database.
+	2. Check if data is clean (lat/lng, not duplicate, etc...)
+				If is not, clean data.
+	3. Return all companies and tags.
 	"""
 
-	# First step : get all companies from database
-	db, companies, tags, companies_tags = get_companies_from_database()
+	db = init_db()
 
-	# Second step : check if companies have lat/lng. If not, use geocode to get lat/lng and save to database.
-	companies = add_lat_lng(db, companies)
+	# First step : get all companies from database
+	companies, tags, companies_tags = get_data_from_db(db)
+
+	# Second step : correct possible problems in data
+	companies, companies_tag = clean_data(db, companies, companies_tags)
+
+	db.close()
 
 	# Third step : return all companies
-	return format_companies(companies, tags, companies_tags)
+	return format_data(companies, tags, companies_tags)
 
-def get_companies_from_database():
-	# Connect to database
-	db = get_db()
+def get_data_from_db(db):
+	""" Get all companies from database.
+	3 tables are used :
+	- company
+	- tag
+	- company_tag
+	"""
 
-	db.c.execute("SELECT * FROM company")
-	companies = db.c.fetchall()
+	companies = db.get("SELECT * FROM company")
+	tags = db.get("SELECT * FROM tag")
+	companies_tags = db.get("SELECT * FROM company_tag")
 
-	db.c.execute("SELECT * FROM tag")
-	tags = db.c.fetchall()
+	return companies, tags, companies_tags
 
-	# On récupère toutes les données de la table company_tag
-	db.c.execute("SELECT * FROM company_tag")
-	company_tags = db.c.fetchall()
+def clean_data(db, companies, companies_tags):
+	""" Check if data is clean (lat/lng, not duplicate, etc...)
+	2 steps :
+	- Check if lat/lng is correct. If not, use geocode API to get lat/lng and save to database.
+	- Check if companies have duplicate. If yes, delete duplicate.
+	"""
 
-	return db, companies, tags, company_tags
+	companies = check_lat_lng(db, companies)
 
+	companies, companies_tags = check_duplicate(db, companies, companies_tags)
+	
+	return companies, companies_tags
 
-# check if companies have lat/lng. If not, use geocode to get lat/lng and save to database
-def add_lat_lng(db, companies):
-	for company in [company for company in companies if company[10] == None or company[11] == None]:
-		addr = f"{company[2]} {company[3]} {company[4]}"
-		
-		# On fait une requete à l'API de Google Maps pour récupérer les coordonnées GPS
-		url = f"https://maps.googleapis.com/maps/api/geocode/json?address={addr}&key={CLE_GEOCODING}"
+def check_lat_lng(db, companies):
+	""" Check if lat/lng is correct. If not, use geocode API to get lat/lng and save to database.
+	"""
+
+	edit = False
+
+	# Looking for companies without lat/lng (companies[10] = lat, companies[11] = lng)
+	companies_to_correct = [company for company in companies if company[10] == None or company[11] == None]
+
+	# For each company without lat/lng, use geocode API to get lat/lng and save to database
+	for company in companies_to_correct:
+
+		# Get address from company
+		address = f"{company[2]} {company[3]} {company[4]}"
+
+		# Get lat/lng from geocode API
+		url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={CLE_GEOCODING}"
 		response = requests.get(url)
+		
+		# Check if response is OK
+		if response.status_code != 200:
+			continue
+
+		# Get lat/lng from response
 		data = response.json()
 
-		print(data)
-
-		# On récupère les coordonnées GPS
+		# Edit company with lat/lng
 		lat = data["results"][0]["geometry"]["location"]["lat"]
 		lng = data["results"][0]["geometry"]["location"]["lng"]
 
+		edit = True
+		db.post(f"UPDATE company SET latitude={lat}, longitude={lng} WHERE id={company[0]}")
 
-		# On met à jour la table company
-		db.c.execute(f"UPDATE company SET latitude={lat}, longitude={lng} WHERE id={company[0]}")
-		db.mysql.commit()
-
-	# On récupère toutes les données de la table company
-	db.c.execute("SELECT * FROM company")
-	companies = db.c.fetchall()
-	
+	if edit:
+		# Regenerate companies
+		companies = db.get("SELECT * FROM company")
 
 	return companies
-		
-# Third step : return all companies
-def format_companies(companies, tags, companies_tags):
-	# On crée le dictionnaire des compagnies
-	companies_dict = {}
+
+def check_duplicate(db, companies, companies_tags):
+	""" Check if companies have duplicate. If yes, delete duplicate.
+	"""
+
+	edit = False
+
+	# Verify if companies have same lat and lng
 	for company in companies:
-		companies_dict[company[0]] = {
+		companies_to_delete = []
+		for company_to_compare in companies:
+			if company[0] == company_to_compare[0]:
+				continue
+			if company[10] == company_to_compare[10] and company[11] == company_to_compare[11]:
+				companies_to_delete.append(company_to_compare)
+
+		if len(companies_to_delete) > 0:
+			companies_to_delete.append(company)
+			
+			# Delete duplicate, keep only one with the greatest id
+			companies_to_delete.sort(key=lambda x: x[0])
+			companies_to_delete.pop()
+
+			for company_to_delete in companies_to_delete:
+				edit = True
+				db.post(f"DELETE FROM company_tag WHERE company_id={company_to_delete[0]}")
+				db.post(f"DELETE FROM company WHERE id={company_to_delete[0]}")
+
+	if edit:
+				
+		# Regenerate companies
+		companies = db.get("SELECT * FROM company")
+		# Regenerate companies_tags
+		companies_tags = db.get("SELECT * FROM company_tag")
+	
+	return companies, companies_tags
+
+def format_data(companies, tags, companies_tag):
+	""" Format companies, tags and companies_tag to return a JSON.
+	Return 2 dict : companies and tags.
+	"""
+
+	# Dict for companies
+	companies_return = {}
+	for company in companies:
+		companies_return[company[0]] = {
 			"name": company[1],
 			"address": company[2],
 			"city": company[3],
@@ -125,21 +155,22 @@ def format_companies(companies, tags, companies_tags):
 			"tags": [],
 		}
 
-	# On crée le dictionnaire des tags
-	tags_dict = {}
+	# Dict for tags
+	tags_return = {}
 	for tag in tags:
-		tags_dict[tag[0]] = {
+		tags_return[tag[0]] = {
 			"name": tag[1],
 		}
 
-	# On ajoute les tags aux compagnies
-	for company_tag in companies_tags:
-		companies_dict[company_tag[0]]["tags"].append(company_tag[1])
+	# Add tags to companies
+	for company_tag in companies_tag:
+		companies_return[company_tag[0]]["tags"].append(company_tag[1])
 
-	# On crée le dictionnaire complet
+	
+	# Dict for all
 	output = {
-		"companies": companies_dict,
-		"tags": tags_dict,
+		"companies": companies_return,
+		"tags": tags_return,
 	}
 
-	return jsonify(output)
+	return jsonify(output), 200
