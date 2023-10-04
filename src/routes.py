@@ -1,12 +1,12 @@
 from flask import jsonify
 
 from main import app
-from companies import get_companies
+from data import get_data
 
 @app.route("/", methods=["GET"])
 def index():
 	return jsonify({'message': 'Hello world!'}), 200
 
-@app.route("/companies", methods=["GET"])
+@app.route("/data", methods=["GET"])
 def companies():
-	return get_companies()
+	return get_data()

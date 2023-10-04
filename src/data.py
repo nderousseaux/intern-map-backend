@@ -6,7 +6,7 @@ from utils import get_env
 
 CLE_GEOCODING = get_env("GEOCODING_API_KEY")
 
-def get_companies():
+def get_data():
 	"""Return a list of companies and tags.
 	This will be in 3 steps :
 	1. Get all companies from database.

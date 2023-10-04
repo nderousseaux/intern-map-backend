@@ -4,7 +4,7 @@ backend for the project "internmap"
 The service propose an API to get the data from the database.
 There is 2 endpoints:
 - `/` to get the hello world message.
-- `/companies` to get the list of companies and the tags.
+- `/data` to get the list of companies and the tags.
 
 ## Development
 
