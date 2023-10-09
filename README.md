@@ -32,5 +32,6 @@ If needed, you can install the dependencies with `pip install -r requirements.tx
 The server is available at `http://localhost:5001`.
 
 ## Deployment
+All commit on the `main` branch are deployed on Google Cloud Run.
 For the deployment, `Dockerfile` and `gcloud-build.yml` are used.
 It's necessary to indicate the environment variables in the Google Cloud Build configuration.
