@@ -1,0 +1,19 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    env_file:
+      - .env
+      
+    tty: true
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - ./bdd/db_data:/var/lib/mysql
+    
+volumes:
+  db_data:

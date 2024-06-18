@@ -35,3 +35,6 @@ The server is available at `http://localhost:5001`.
 All commit on the `main` branch are deployed on Google Cloud Run.
 For the deployment, `Dockerfile` and `gcloud-build.yml` are used.
 It's necessary to indicate the environment variables in the Google Cloud Build configuration.
+
+### Localy deployment
+

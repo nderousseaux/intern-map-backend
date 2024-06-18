@@ -24,7 +24,7 @@ RUN apt-get -y install nginx \
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --src /usr/local/src
 
-COPY build/nginx.conf /etc/nginx
+COPY ./build/nginx.conf /etc/nginx
 RUN chmod +x ./build/start.sh
 
 CMD ["./build/start.sh"]
